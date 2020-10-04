@@ -42,12 +42,12 @@ lif_state_read(struct lif_dict *state, FILE *fd)
 
 		if (equals_p == NULL)
 		{
-			lif_state_upsert(state, ifname, &(struct lif_interface){ .ifname = ifname, .refcount = rc });
+			lif_state_upsert(state, &(struct lif_interface){ .ifname = ifname, .refcount = rc });
 			continue;
 		}
 
 		*equals_p++ = '\0';
-		lif_state_upsert(state, ifname, &(struct lif_interface){ .ifname = equals_p, .refcount = rc });
+		lif_state_upsert(state, &(struct lif_interface){ .ifname = equals_p, .refcount = rc });
 	}
 
 	return true;
@@ -70,14 +70,14 @@ lif_state_read_path(struct lif_dict *state, const char *path)
 }
 
 void
-lif_state_ref_if(struct lif_dict *state, const char *ifname, struct lif_interface *iface)
+lif_state_ref_if(struct lif_dict *state, struct lif_interface *iface)
 {
 	iface->refcount++;
-	lif_state_upsert(state, ifname, iface);
+	lif_state_upsert(state, iface);
 }
 
 void
-lif_state_unref_if(struct lif_dict *state, const char *ifname, struct lif_interface *iface)
+lif_state_unref_if(struct lif_dict *state, struct lif_interface *iface)
 {
 	if (iface->refcount == 0)
 		return;
@@ -85,22 +85,22 @@ lif_state_unref_if(struct lif_dict *state, const char *ifname, struct lif_interf
 	iface->refcount--;
 
 	if (iface->refcount)
-		lif_state_upsert(state, ifname, iface);
+		lif_state_upsert(state, iface);
 	else
-		lif_state_delete(state, ifname);
+		lif_state_delete(state, iface->ifname);
 }
 
 void
-lif_state_upsert(struct lif_dict *state, const char *ifname, struct lif_interface *iface)
+lif_state_upsert(struct lif_dict *state, struct lif_interface *iface)
 {
-	lif_state_delete(state, ifname);
+	lif_state_delete(state, iface->ifname);
 
 	struct lif_state_record *rec = calloc(1, sizeof(*rec));
 
 	rec->mapped_if = strdup(iface->ifname);
 	rec->refcount = iface->refcount;
 
-	lif_dict_add(state, ifname, rec);
+	lif_dict_add(state, iface->ifname, rec);
 }
 
 void

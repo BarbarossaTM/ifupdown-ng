@@ -328,9 +328,9 @@ handle_refcounting(struct lif_dict *state, struct lif_interface *iface, bool up)
 	size_t orig_refcount = iface->refcount;
 
 	if (up)
-		lif_state_ref_if(state, iface->ifname, iface);
+		lif_state_ref_if(state, iface);
 	else
-		lif_state_unref_if(state, iface->ifname, iface);
+		lif_state_unref_if(state, iface);
 
 #ifdef DEBUG_REFCOUNTING
 	fprintf(stderr, "handle_refcounting(): orig_refcount=%zu, refcount=%zu, direction=%s\n",
@@ -446,7 +446,7 @@ lif_lifecycle_run(const struct lif_execute_opts *opts, struct lif_interface *ifa
 		if (!lif_lifecycle_run_phase(opts, iface, "post-up", lifname, up))
 			return false;
 
-		lif_state_ref_if(state, lifname, iface);
+		lif_state_ref_if(state, iface);
 	}
 	else
 	{
@@ -466,7 +466,7 @@ lif_lifecycle_run(const struct lif_execute_opts *opts, struct lif_interface *ifa
 		if (!handle_dependents(opts, iface, collection, state, up))
 			return false;
 
-		lif_state_unref_if(state, lifname, iface);
+		lif_state_unref_if(state, iface);
 	}
 
 	return true;
