@@ -281,6 +281,21 @@ lif_lifecycle_query_dependents(const struct lif_execute_opts *opts, struct lif_i
 	return true;
 }
 
+void
+lif_lifecycle_prepare_phase(struct lif_dict *collection)
+{
+	struct lif_node *iter;
+
+	LIF_DICT_FOREACH(iter, collection)
+	{
+		struct lif_dict_entry *entry = iter->data;
+		struct lif_interface *iface = entry->data;
+
+		iface->phase_vars.refcount = iface->refcount;
+		iface->phase_vars.rdepends_count = iface->rdepends_count;
+	}
+}
+
 bool
 lif_lifecycle_run_phase(const struct lif_execute_opts *opts, struct lif_interface *iface, const char *phase, const char *lifname, bool up)
 {
@@ -325,7 +340,7 @@ handle_error:
 static bool
 handle_refcounting(struct lif_dict *state, struct lif_interface *iface, bool up)
 {
-	size_t orig_refcount = iface->refcount;
+	size_t orig_refcount = iface->phase_vars.refcount;
 
 	if (up)
 		lif_state_ref_if(state, iface);
@@ -334,7 +349,7 @@ handle_refcounting(struct lif_dict *state, struct lif_interface *iface, bool up)
 
 #ifdef DEBUG_REFCOUNTING
 	fprintf(stderr, "handle_refcounting(): orig_refcount=%zu, refcount=%zu, direction=%s\n",
-		orig_refcount, iface->refcount, up ? "UP" : "DOWN");
+		orig_refcount, iface->phase_vars.refcount, up ? "UP" : "DOWN");
 #endif
 
 	/* if going up and orig_refcount > 0 -- we're already configured. */
@@ -342,7 +357,7 @@ handle_refcounting(struct lif_dict *state, struct lif_interface *iface, bool up)
 		return true;
 
 	/* if going down and iface->refcount > 1 -- we still have other dependents. */
-	if (!up && iface->refcount > 1)
+	if (!up && iface->phase_vars.refcount > 1)
 		return true;
 
 	/* we can change this interface -- no blocking dependents. */

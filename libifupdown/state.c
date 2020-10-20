@@ -72,19 +72,21 @@ lif_state_read_path(struct lif_dict *state, const char *path)
 void
 lif_state_ref_if(struct lif_dict *state, struct lif_interface *iface)
 {
-	iface->refcount++;
+	iface->phase_vars.refcount++;
+	// XXX only on "up"
 	lif_state_upsert(state, iface);
 }
 
 void
 lif_state_unref_if(struct lif_dict *state, struct lif_interface *iface)
 {
-	if (iface->refcount == 0)
+	if (iface->phase_vars.refcount == 0)
 		return;
 
-	iface->refcount--;
+	iface->phase_vars.refcount--;
 
-	if (iface->refcount)
+	// XXX only on "up" / "down"
+	if (iface->phase_vars.refcount)
 		lif_state_upsert(state, iface);
 	else
 		lif_state_delete(state, iface->ifname);

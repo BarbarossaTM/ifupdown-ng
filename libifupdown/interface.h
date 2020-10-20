@@ -33,6 +33,15 @@ struct lif_address {
 };
 
 /*
+ * Variables which change within each phase run. They are copied from the
+ * corresponding lif_interface variables before each phase.
+ */
+struct lif_phase_vars {
+	size_t refcount;
+	size_t rdepends_count;
+};
+
+/*
  * Interfaces are contained in a dictionary, with the interfaces mapped by
  * interface name to their `struct lif_interface`.
  *
@@ -57,6 +66,10 @@ struct lif_interface {
 
 	size_t refcount;	/* > 0 if up, else 0 */
 	size_t rdepends_count;	/* > 0 if any reverse dependency */
+
+	struct lif_phase_vars phase_vars;
+
+	int lock_fd;		/* File descriptor of lock for interface state file */
 };
 
 #define LIF_INTERFACE_COLLECTION_FOREACH(iter, collection) \
