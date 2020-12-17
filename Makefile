@@ -96,21 +96,21 @@ CPPFLAGS += ${CPPFLAGS_Y}
 
 EXECUTOR_SCRIPTS_CORE ?= \
 	dhcp \
+	forward \
 	ipv6-ra \
-	static \
 	link \
 	ppp \
-	forward
+	static
 
 EXECUTOR_SCRIPTS_OPT ?= \
-	bridge \
-	vrf \
-	tunnel \
-	gre \
-	wireguard \
-	ethtool \
 	batman \
-	wifi
+	bridge \
+	ethtool \
+	gre \
+	tunnel \
+	vrf \
+	wifi \
+	wireguard
 
 EXECUTOR_SCRIPTS ?= ${EXECUTOR_SCRIPTS_CORE} ${EXECUTOR_SCRIPTS_OPT}
 
